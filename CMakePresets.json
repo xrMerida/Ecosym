@@ -1,0 +1,112 @@
+﻿{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "base",
+            "description": "For more information: http://aka.ms/cmakepresetsvs",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/",
+            "installDir": "${sourceDir}/build/install/",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "Windows-debug",
+            "displayName": "Windows Debug",
+            "description": "Sets debug build type, x64 arch, and cl compiler",
+            "inherits": "base",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl",
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "Windows-release",
+            "displayName": "Windows Release",
+            "description": "Sets release build type",
+            "inherits": "Windows-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "Linux-debug",
+            "displayName": "Linux Debug",
+            "description": "Sets debug build type",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "Linux-release",
+            "displayName": "Linux Release",
+            "description": "Sets release build type",
+            "inherits": "Linux-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "Darwin-debug",
+            "displayName": "MacOS Debug",
+            "description": "Sets debug build type",
+            "inherits": "base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "Darwin-release",
+            "displayName": "MacOS Release",
+            "description": "Sets release build type",
+            "inherits": "Darwin-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default-build-Linux",
+            "displayName": "Linux-default",
+            "configurePreset": "Linux-debug",
+            "description": "Vanilla build"
+        },
+        {
+            "name": "default-build-Windows",
+            "displayName": "Windows-default",
+            "configurePreset": "Windows-debug",
+            "description": "Vanilla build"
+        },
+        {
+            "name": "default-build-Darwin",
+            "displayName": "Darwin-default",
+            "configurePreset": "Darwin-debug",
+            "description": "Vanilla build"
+        }
+    ]
+}
