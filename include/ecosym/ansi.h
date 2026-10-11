@@ -28,5 +28,20 @@ inline constexpr esc kFaint[] = "\033[2m";
 
 // @brief Allow windows terminals interpret ANSI codes
 // @note This function is a no-op on non-Windows platforms.
-void setup();
+inline void setup() {
+#ifdef _WIN32
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return;
+    }
+
+    DWORD mode = 0;
+    if (!GetConsoleMode(handle, &mode)) {
+        return;
+    }
+
+    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(handle, mode);
+#endif
+}
 } // namespace ansi
