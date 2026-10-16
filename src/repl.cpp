@@ -6,10 +6,13 @@
 #include <ostream>
 #include <string_view>
 
-void repl::help(const std::span<const command> commands) {
-    for (const auto &command : commands)
-        std::cout << command.str << '\t' << command.desc << '\n';
-    std::cout << std::endl;
+constexpr void repl::help(std::span<const command> commands) {
+    for (auto &command : commands)
+        std::cout << command.cmd << '\t' << command.desc << '\n';
+    std::cout << ansi::kFaint << "help\tPrint this help message\n"
+              << "clear\tClear the screen\n"
+              << "exit\tExit the current repl\n";
+    std::cout << ansi::kRes << std::endl;
 }
 
 bool repl::cin_fail() {
@@ -21,8 +24,8 @@ bool repl::cin_fail() {
     return true;
 }
 
-void repl::run(const std::span<const repl::command> commands,
-               const std::string_view &status, const ansi::esc_view &style) {
+void repl::run(std::span<const command> commands, std::string_view status,
+               ansi::esc_sequence style) {
     static uint8_t nest_lv = 0;
     nest_lv++;
     if (nest_lv > 1) {
@@ -33,34 +36,34 @@ void repl::run(const std::span<const repl::command> commands,
                   << std::endl;
     }
     do {
-        std::string input;
+        std::string buffer;
         std::cout << style << ansi::kBold << status << ansi::kRes;
         for (uint8_t i = 0; i < nest_lv; i++) std::cout << '>';
         std::cout << ' ';
-        std::getline(std::cin, input);
+        std::getline(std::cin, buffer);
 
-        if (input == "exit") break;
-        if (input.empty()) continue;
-        if (input == "help") {
+        if (buffer == "exit") break;
+        if (buffer.empty()) continue;
+        if (buffer == "help") {
             help(commands);
             continue;
         }
-        if (input == "clear") {
+        if (buffer == "clear") {
             std::cout << ansi::kClear << std::flush;
             continue;
         }
 
         bool found = false;
-        for (const auto &command : commands) {
-            found = (input == command.str);
-            if (found) {
-                command.action();
-                break;
-            }
+        for (auto &command : commands) {
+            found = (buffer == command.cmd);
+            if (!found) continue;
+
+            command.action();
+            break;
         }
 
         if (!found) {
-            std::cerr << ansi::kRed << status << ": " << input
+            std::cerr << ansi::kRed << status << ": " << buffer
                       << ": command not found" << ansi::kRes << std::endl;
         }
     } while (!cin_fail());
@@ -73,13 +76,13 @@ void repl::run(const std::span<const repl::command> commands,
     }
 }
 
-bool repl::confirm(const std::string_view &text) {
-    std::string input;
+bool repl::confirm(std::string_view text) {
+    std::string buffer;
     do {
         std::cout << ansi::kYellow << text << " [Y/N]: " << ansi::kRes;
-        std::getline(std::cin, input);
+        std::getline(std::cin, buffer);
 
-        switch (tolower(input[0])) {
+        switch (tolower(buffer[0])) {
         case 'y':
             return true;
         case 'n':

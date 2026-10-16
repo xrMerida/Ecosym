@@ -7,4 +7,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB SOURCES src/*.cpp)
 add_executable(ecosym ${SOURCES})
-target_include_directories(ecosym PRIVATE include/ecosym)
+target_include_directories(ecosym
+                            PRIVATE include/ecosym
+                            PUBLIC include/service)
