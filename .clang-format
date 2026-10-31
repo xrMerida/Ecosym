@@ -1,6 +1,7 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
 UseTab: Never
-AllowShortFunctionsOnASingleLine: true
-AllowShortIfStatementsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLoopsOnASingleLine: true
+AccessModifierOffset: -4
