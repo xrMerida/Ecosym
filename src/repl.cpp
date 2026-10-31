@@ -1,45 +1,69 @@
 #include "service/repl.h"
 #include "service/ansi.h"
-#include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <ostream>
+#include <stdexcept>
+#include <string>
 #include <string_view>
 
 constexpr void repl::help(std::span<const command> commands) {
     for (auto &command : commands)
         std::cout << command.cmd << '\t' << command.desc << '\n';
-    std::cout << ansi::kFaint << "help\tPrint this help message\n"
+    std::cout << ansi::faint << "help\tPrint this help message\n"
               << "clear\tClear the screen\n"
               << "exit\tExit the current repl\n";
-    std::cout << ansi::kRes << std::endl;
+    std::cout << ansi::res << std::endl;
 }
 
 bool repl::cin_fail() {
     if (!std::cin.fail()) return false;
 
-    std::cerr << ansi::kRed << "repl: input error" << ansi::kRes << std::endl;
+    if (std::cin.eof()) {
+        std::cout << '\n';
+        std::exit(0);
+    }
+
+    std::cerr << ansi::red << "repl: input error" << ansi::res << std::endl;
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return true;
 }
 
+bool repl::try_read_int(int &result, const int &min, const int &max) {
+    result = 0;
+    std::string buffer;
+    std::getline(std::cin, buffer);
+
+    if (cin_fail() || buffer.empty()) return false;
+
+    try {
+        int parsed = std::stoi(buffer);
+
+        if (parsed < min || parsed > max) {
+            throw std::out_of_range("out of range");
+        }
+
+        result = parsed;
+        return true;
+    } catch (const std::out_of_range &) {
+    } catch (const std::invalid_argument &) {
+    }
+
+    std::cerr << ansi::red << "invalid input: number between " << ansi::res
+              << ansi::bold << '[' << min << " - " << max << ']' << ansi::res
+              << std::endl;
+
+    return false;
+}
+
 void repl::run(std::span<const command> commands, std::string_view status,
                ansi::esc_sequence style) {
-    static uint8_t nest_lv = 0;
-    nest_lv++;
-    if (nest_lv > 1) {
-        std::cout << ansi::kFaint << "nested into " << status << ansi::kRes
-                  << std::endl;
-    } else {
-        std::cout << ansi::kFaint << "log into " << status << ansi::kRes
-                  << std::endl;
-    }
+    std::cout << ansi::faint << "log into " << status << ansi::res << std::endl;
     do {
         std::string buffer;
-        std::cout << style << ansi::kBold << status << ansi::kRes;
-        for (uint8_t i = 0; i < nest_lv; i++) std::cout << '>';
-        std::cout << ' ';
+        std::cout << style << ansi::bold << status << ansi::res << "> ";
         std::getline(std::cin, buffer);
 
         if (buffer == "exit") break;
@@ -49,46 +73,25 @@ void repl::run(std::span<const command> commands, std::string_view status,
             continue;
         }
         if (buffer == "clear") {
-            std::cout << ansi::kClear << std::flush;
+            std::cout << ansi::clear << std::flush;
             continue;
         }
 
-        bool found = false;
+        function_t action = no_op;
         for (auto &command : commands) {
-            found = (buffer == command.cmd);
-            if (!found) continue;
+            if (buffer != command.cmd) continue;
 
-            command.action();
-            break;
+            action = command.action;
         }
 
-        if (!found) {
-            std::cerr << ansi::kRed << status << ": " << buffer
-                      << ": command not found" << ansi::kRes << std::endl;
+        if (action != no_op) {
+            action();
+            continue;
         }
+
+        std::cerr << ansi::red << "repl: " << buffer << ": command not found"
+                  << ansi::res << std::endl;
     } while (!cin_fail());
 
-    nest_lv--;
-    if (nest_lv == 0) {
-        std::cout << ansi::kFaint << "logout" << ansi::kRes << std::endl;
-    } else {
-        std::cout << ansi::kFaint << "unnested" << ansi::kRes << std::endl;
-    }
-}
-
-bool repl::confirm(std::string_view text) {
-    std::string buffer;
-    do {
-        std::cout << ansi::kYellow << text << " [Y/N]: " << ansi::kRes;
-        std::getline(std::cin, buffer);
-
-        switch (tolower(buffer[0])) {
-        case 'y':
-            return true;
-        case 'n':
-            return false;
-        }
-    } while (!cin_fail());
-
-    return false;
+    std::cout << ansi::faint << "logout" << ansi::res << std::endl;
 }

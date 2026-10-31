@@ -7,7 +7,7 @@
 namespace data {
 /// @brief doubly-linked list
 template <typename T> class list {
-  public:
+public:
     using link = data::d_link;
     using node = data::node<T, link>;
     using iterator = node::iterator;
@@ -96,7 +96,7 @@ template <typename T> class list {
         size_ = 0;
     }
 
-  private:
+private:
     link sentinel{};
     size_t size_ = 0;
 };
@@ -106,6 +106,7 @@ template <typename T> class list {
 namespace data::test {
 inline void list_self_check() {
     list<int> test;
+    assert(test.size() == 0 && test.empty());
     test.push_back(2);
     test.push_front(1);
     test.insert(++test.begin(), 4);

@@ -6,7 +6,7 @@
 
 namespace data {
 template <typename T> class queue {
-  public:
+public:
     using link = data::s_link;
     using node = data::node<T, link>;
 
@@ -65,7 +65,7 @@ template <typename T> class queue {
         while (!empty()) pop();
     }
 
-  private:
+private:
     node *front_ = nullptr;
     node *tail_ = nullptr;
     size_t size_ = 0;

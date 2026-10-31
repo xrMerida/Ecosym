@@ -6,7 +6,7 @@
 
 namespace data {
 template <typename T> class stack {
-  public:
+public:
     using link = data::s_link;
     using node = data::node<T, link>;
 
@@ -61,7 +61,7 @@ template <typename T> class stack {
         while (!empty()) pop();
     }
 
-  private:
+private:
     node *top_ = nullptr;
     size_t size_ = 0;
 };
