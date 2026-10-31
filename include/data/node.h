@@ -3,18 +3,12 @@
 namespace data {
 
 /// @brief A base for singly-linked node structures
-/// @note the default constructor assigns %next to itself
 struct s_link {
-    s_link() = default;
-    s_link(s_link *_next) : next(_next) {}
     s_link *next = this;
 };
 
 /// @brief A base for doubly-linked node structure
-/// @note the default constructor assigns %next and %prev to itself
 struct d_link {
-    d_link() = default;
-    d_link(d_link *_prev, d_link *_next) : prev(_prev), next(_next) {}
     d_link *prev = this;
     d_link *next = this;
 };
@@ -22,43 +16,49 @@ struct d_link {
 /// @brief A linked node structure
 /// @tparam T The type of data to be stored in the node
 /// @tparam L The link type used by the node
-template <typename T, typename L> struct node : public L {
-    using link = L;
+template <typename T, typename link> struct node : link {
 
     T data{};
 
-    class iterator {
-      public:
-        using node = data::node<T, L>;
-        explicit iterator(link *current) : current_(current) {}
+    template <typename Tp> class _iterator {
+    public:
+        using node = data::node<T, link>;
 
-        /// @brief A read-write pointer to the holding node
+        explicit _iterator(link *current) : current_(current) {}
+
+        /// @brief Returns the underlying link pointer
         link *base() const { return current_; }
 
-        T &operator*() const { return static_cast<node *>(current_)->data; }
-        T *operator->() const { return &static_cast<node *>(current_)->data; }
+        Tp &operator*() const { return static_cast<node *>(current_)->data; }
+        Tp *operator->() const { return &static_cast<node *>(current_)->data; }
 
-        iterator &operator++() {
+        _iterator &operator++() {
             current_ = current_->next;
             return *this;
         }
 
-        iterator &operator--()
+        _iterator &operator--()
             requires requires(link *p) { p->prev; }
         {
             current_ = current_->prev;
             return *this;
         }
 
-        bool operator==(const iterator &rhs) const {
+        template <typename Tp2>
+        bool operator==(const _iterator<Tp2> &rhs) const {
             return current_ == rhs.current_;
         }
-        bool operator!=(const iterator &rhs) const {
-            return current_ != rhs.current_;
+        template <typename Tp2>
+        bool operator!=(const _iterator<Tp2> &rhs) const {
+            return !(*this == rhs);
         }
 
-      private:
+    private:
+        template <typename> friend class _iterator;
         link *current_;
     };
+
+    using iterator = _iterator<T>;
+    using const_iterator = _iterator<const T>;
 };
 } // namespace data

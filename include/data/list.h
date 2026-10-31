@@ -5,12 +5,13 @@
 #include <cstddef>
 
 namespace data {
+/// @brief doubly-linked list
 template <typename T> class list {
   public:
     using link = data::d_link;
     using node = data::node<T, link>;
     using iterator = node::iterator;
-    using size_type = std::size_t;
+    using const_iterator = node::const_iterator;
 
     list() = default;
     ~list() { clear(); }
@@ -20,25 +21,56 @@ template <typename T> class list {
     list &operator=(const list &) = delete;
     list &operator=(list &&) = delete;
 
-    [[nodiscard]] size_type size() const { return size_; }
+    [[nodiscard]] size_t size() const { return size_; }
     [[nodiscard]] bool empty() const { return size_ == 0; }
 
+    /// @brief Returns a read-write iterator to the first element of the list
     iterator begin() { return iterator(sentinel.next); }
+
+    /// @brief Returns a read-write iterator to the sentinel of the list
+    /// @note Must not be instantiated
+    /// Iterator points to one past the last element of the doubly-linked list
+    /// reducing the iterator by one will make it point to the last element of
+    /// the list
     iterator end() { return iterator(&sentinel); }
 
-    const iterator begin() const { return iterator(sentinel.next); }
-    const iterator end() const { return iterator(&sentinel); }
+    /// @brief Returns a read-only iterator to the first element of the list
+    const_iterator begin() const { return cbegin(); }
+    const_iterator cbegin() const { return const_iterator(sentinel.next); }
 
-    void insert(const iterator &pos, const T &data) {
+    /// @brief Returns a read-only iterator to the sentinel of the list
+    /// @note Must not be instantiated
+    /// Iterator points to one past the last element of the doubly-linked list
+    /// reducing the iterator by one will make it point to the last element of
+    /// the list
+    const_iterator end() const { return cend(); }
+    const_iterator cend() const {
+        return const_iterator(const_cast<link *>(&sentinel));
+    }
+
+    /// @brief Insert an element in the list
+    /// @param pos Iterator holding the position before which to insert
+    /// @param data Data to be inserted
+    ///
+    /// This function does not check the %position belongs to this list to
+    /// achieve constant time
+    constexpr void insert(const iterator &pos, const T &data) {
         link *next = pos.base();
         auto *n = new node{{next->prev, next}, data};
         n->prev->next = n;
         next->prev = n;
         size_++;
     }
-    void push_back(const T &data) { insert(end(), data); }
-    void push_front(const T &data) { insert(begin(), data); }
+    /// @brief Inserts %data at the end of the list
+    constexpr void push_back(const T &data) { insert(end(), data); }
+    /// @brief Inserts %data at the beginning of the list
+    constexpr void push_front(const T &data) { insert(begin(), data); }
 
+    /// @brief Removes the data in the given position
+    /// @param pos Iterator containing the node to erase
+    ///
+    /// This function does not check the %position belongs to this list to
+    /// achieve constant time
     iterator erase(const iterator &pos) {
         assert(pos != end());
 
@@ -50,32 +82,12 @@ template <typename T> class list {
         size_--;
         return iterator(next);
     }
-    size_type remove(const T &data) {
-        size_type removed = 0;
-        link *aliased = nullptr;
-        for (auto it = begin(); it != end();) {
-            if (*it != data) {
-                ++it;
-                continue;
-            }
-            if (&(*it) == &data) {
-                aliased = it.base();
-                ++it;
-                continue;
-            }
-            it = erase(it);
-            removed++;
-        }
-        if (aliased) {
-            erase(iterator(aliased));
-            removed++;
-        }
-        return removed;
-    }
+
+    /// @brief Clears every element from the list
     void clear() {
         link *l = sentinel.next;
         while (l != &sentinel) {
-            auto old = static_cast<node *>(l);
+            node *old = static_cast<node *>(l);
             l = l->next;
             delete old;
         }
@@ -86,7 +98,7 @@ template <typename T> class list {
 
   private:
     link sentinel{};
-    size_type size_ = 0;
+    size_t size_ = 0;
 };
 } // namespace data
 
@@ -96,19 +108,25 @@ inline void list_self_check() {
     list<int> test;
     test.push_back(2);
     test.push_front(1);
-    test.insert(test.begin(), 4);
+    test.insert(++test.begin(), 4);
 
     int sum = 0;
     for (int value : test) {
         sum += value;
     }
-    (void)sum;
+    assert(sum == 7);
 
-    test.erase(test.begin());
-    test.remove(*test.begin());
+    assert(*test.cbegin() == 1);
+    assert(*test.cend() == *test.end());
+
+    test.erase(++test.begin());
+    assert(test.size() == 2);
+    test.erase(--test.end());
+    assert(test.size() == 1);
+    assert(*test.begin() == 1);
 
     test.clear();
-    (void)test.size();
+    assert(test.empty());
 }
 } // namespace data::test
 #endif
