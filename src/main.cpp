@@ -113,7 +113,7 @@ void reset_cmd() {
     int capacity = (rows * columns) / 2;
     for (int i = std::size(factories) - 1; i >= 0; i--) {
         auto &fct = factories[i];
-        constexpr int min = 5;
+        constexpr int min = 1;
         int count = read_int(fct.name, min, capacity - (i * min));
         capacity -= count;
         for (; count > 0; count--) {
