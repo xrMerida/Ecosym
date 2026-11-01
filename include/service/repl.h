@@ -45,13 +45,10 @@ void run(std::span<const command> commands, std::string_view status,
 
 /// @brief Parses a user input from cin to result
 /// @param result A reference to the variable storing the parse
-/// @param status A string_view representing the status message to display in
-/// the prompt.
 /// @param min The minimum value accepted
 /// @param max The maximin value accepted
 /// @returns true if the parse succeeds, false otherwise
-/// Reads a line from cin and stores its integer value in result. Leading and
-/// trailing whitespace is accepted, but other trailing characters are not.
+/// Reads a line from cin and stores its integer value in result.
 /// It fails if the input is out of range, if cin fails, or if it does not
 /// contain a number.
 [[nodiscard]] bool try_read_int(int &result, const int &min, const int &max);

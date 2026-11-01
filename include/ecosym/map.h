@@ -13,7 +13,7 @@ public:
     map &operator=(const map &) = delete;
     map &operator=(map &&) = delete;
 
-    map(int rows, int columns, char empty = '.');
+    map(int rows, int columns);
     [[nodiscard]] int rows() const;
     [[nodiscard]] int columns() const;
     [[nodiscard]] bool in_bounds(position location) const;
@@ -27,7 +27,7 @@ private:
     void check_location(position location) const;
 
     std::vector<std::string> cells_;
-    const char empty_;
+    const char empty_ = '\'';
 };
 
 } // namespace ecosym

@@ -3,7 +3,7 @@
 
 namespace ecosym {
 
-map::map(int rows, int columns, char empty) : cells_(), empty_(empty) {
+map::map(int rows, int columns) : cells_() {
     if (rows <= 0 || columns <= 0) {
         throw std::invalid_argument("map dimensions must be positive");
     }

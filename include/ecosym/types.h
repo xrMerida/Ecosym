@@ -18,7 +18,7 @@ enum class trophic_t {
 constexpr position no_position{-1, -1};
 
 inline std::ostream &operator<<(std::ostream &output, position location) {
-    return output << '[' << location.row << ", " << location.column << ']';
+    return output << '[' << location.column << ", " << location.row << ']';
 }
 
 inline std::ostream &operator<<(std::ostream &output, trophic_t type) {

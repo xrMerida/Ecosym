@@ -10,7 +10,6 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
-#include <vector>
 
 namespace ecosym {
 
@@ -177,7 +176,7 @@ position simulation::random_empty() const {
 }
 
 bool simulation::kill(organism *hunter, trophic_t prey_type) {
-    if (hunter == nullptr || !owns(hunter)) {
+    if (!owns(hunter)) {
         return false;
     }
 
@@ -198,7 +197,7 @@ bool simulation::kill(organism *hunter, trophic_t prey_type) {
 }
 
 bool simulation::move_random(organism *who) {
-    if (owns(who)) {
+    if (!owns(who)) {
         return false;
     }
 
@@ -237,7 +236,7 @@ void simulation::step() {
     }
 
     for (organism *current : snapshot) {
-        if (current->dead()) continue;
+        if (!owns(current)) continue;
         current->act(*this);
     }
     remove_dead();
@@ -249,19 +248,19 @@ void simulation::draw(std::ostream &output) {
         map_.set(current->location(), current->symbol());
     }
 
+    for (int r = map_.rows() - 1; r >= 0; r--) {
+        output << std::setw(2) << r << ' ';
+        for (int c = 0; c < map_.columns(); c++) {
+            char symbol = map_.at({r, c});
+            output << std::setw(2) << symbol << ' ';
+        }
+        output << '\n';
+    }
     output << "   ";
     for (int c = 0; c < map_.columns(); c++) {
         output << std::setw(2) << c << ' ';
     }
     output << '\n';
-
-    for (int r = 0; r < map_.rows(); r++) {
-        output << std::setw(2) << r << ' ';
-        for (int c = 0; c < map_.columns(); c++) {
-            output << std::setw(2) << map_.at({r, c}) << ' ';
-        }
-        output << '\n';
-    }
 }
 
 int simulation::distance(position first, position second) {
