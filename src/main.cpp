@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <iterator>
+#include <string_view>
 
 using namespace ecosym;
 using function_t = repl::function_t;
@@ -52,7 +54,7 @@ inline int random_value(int max) {
     return std::rand() % max;
 }
 
-int read_number(const char *name, int min, int max) {
+int read_number(std::string_view name, int min, int max) {
     int result;
     do {
         std::cout << name << " [" << min << " - " << max << "]: ";
@@ -98,8 +100,9 @@ void reset_cmd() {
     };
 
     int capacity = (rows * columns) / 2;
-    for (auto &fct : factories) {
-        int count = read_number(fct.name, 1, capacity);
+    for (int i = std::size(factories) - 1; i >= 0; i--) {
+        auto &fct = factories[i];
+        int count = read_number(fct.name, 1, capacity - i);
         capacity -= count;
         for (; count > 0; count--) {
             position location = world->random_empty();
