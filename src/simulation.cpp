@@ -237,6 +237,7 @@ void simulation::step() {
 
     for (organism *current : snapshot) {
         if (!owns(current)) continue;
+        if (current->dead()) continue;
         current->act(*this);
     }
     remove_dead();

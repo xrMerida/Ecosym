@@ -52,13 +52,4 @@ void run(std::span<const command> commands, std::string_view status,
 /// It fails if the input is out of range, if cin fails, or if it does not
 /// contain a number.
 [[nodiscard]] bool try_read_int(int &result, const int &min, const int &max);
-
-/// @brief Display a menu to cout and return the answer from cin
-/// @param options A span of constant null-terminated strings that represent the
-/// options to display
-/// @param status A string_view representing the status message to display in
-/// the prompt.
-/// @param style An optional ANSI escape sequence to style the prompt.
-[[nodiscard]] int menu(std::span<cstring> options, std::string_view status,
-                       ansi::esc_sequence style);
 }; // namespace repl

@@ -87,7 +87,7 @@ void lookup_cmd() {
     std::cout << "symbol: " << current->symbol() << '\n'
               << "type: " << current->trophic() << '\n'
               << "energy: " << current->energy() << '\n'
-              << "location: (" << row << ", " << column << ")\n";
+              << "location: (" << column << ", " << row << ")\n";
 }
 
 void reset_cmd() {
@@ -114,7 +114,7 @@ void reset_cmd() {
     for (int i = std::size(factories) - 1; i >= 0; i--) {
         auto &fct = factories[i];
         constexpr int min = 5;
-        int count = read_int(fct.name, min, capacity - ((i - 1) * min));
+        int count = read_int(fct.name, min, capacity - (i * min));
         capacity -= count;
         for (; count > 0; count--) {
             position location = world->random_empty();
@@ -129,6 +129,7 @@ void reset_cmd() {
 }
 
 int main() {
+    ansi::setup();
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
     constexpr function_t step_cmd = [] {

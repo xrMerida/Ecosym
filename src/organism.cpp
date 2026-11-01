@@ -5,6 +5,7 @@
 
 void ecosym::animal::act(simulation &world) {
     consume_energy(upkeep());
+    if (dead()) return;
 
     if (world.kill(this, prey_type())) return;
     if (world.move_towards(this, prey_type())) return;
