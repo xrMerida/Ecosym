@@ -2,7 +2,7 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "base",
+            "name": "unix-base",
             "description": "For more information: http://aka.ms/cmakepresetsvs",
             "hidden": true,
             "generator": "Ninja",
@@ -18,7 +18,7 @@
             "name": "Windows-debug",
             "displayName": "Windows Debug",
             "description": "Sets debug build type, x64 arch, and cl compiler",
-            "inherits": "base",
+            "inherits": "unix-base",
             "architecture": {
                 "value": "x64",
                 "strategy": "external"
@@ -39,15 +39,13 @@
             "displayName": "Windows Release",
             "description": "Sets release build type",
             "inherits": "Windows-debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
+            "binaryDir": "${sourceDir}/release/"
         },
         {
             "name": "Linux-debug",
             "displayName": "Linux Debug",
             "description": "Sets debug build type",
-            "inherits": "base",
+            "inherits": "unix-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             },
@@ -62,6 +60,7 @@
             "displayName": "Linux Release",
             "description": "Sets release build type",
             "inherits": "Linux-debug",
+            "binaryDir": "${sourceDir}/release/",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
@@ -70,7 +69,7 @@
             "name": "Darwin-debug",
             "displayName": "MacOS Debug",
             "description": "Sets debug build type",
-            "inherits": "base",
+            "inherits": "unix-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             },
@@ -85,6 +84,7 @@
             "displayName": "MacOS Release",
             "description": "Sets release build type",
             "inherits": "Darwin-debug",
+            "binaryDir": "${sourceDir}/release/",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
@@ -92,21 +92,39 @@
     ],
     "buildPresets": [
         {
-            "name": "default-build-Linux",
-            "displayName": "Linux-default",
+            "name": "debug-build-Linux",
+            "displayName": "Linux Debug",
             "configurePreset": "Linux-debug",
-            "description": "Vanilla build"
+            "description": "Build with debug symbols"
         },
         {
-            "name": "default-build-Windows",
-            "displayName": "Windows-default",
+            "name": "debug-build-Windows",
+            "displayName": "Windows Debug",
             "configurePreset": "Windows-debug",
+            "description": "Build with debug symbols"
+        },
+        {
+            "name": "debug-build-Darwin",
+            "displayName": "Darwin Debug",
+            "configurePreset": "Darwin-debug",
+            "description": "Build with debug symbols"
+        },
+        {
+            "name": "release-build-Linux",
+            "displayName": "Linux Release",
+            "configurePreset": "Linux-release",
             "description": "Vanilla build"
         },
         {
-            "name": "default-build-Darwin",
-            "displayName": "Darwin-default",
-            "configurePreset": "Darwin-debug",
+            "name": "release-build-Windows",
+            "displayName": "Windows Release",
+            "configurePreset": "Windows-release",
+            "description": "Vanilla build"
+        },
+        {
+            "name": "release-build-Darwin",
+            "displayName": "Darwin Release",
+            "configurePreset": "Darwin-release",
             "description": "Vanilla build"
         }
     ]
