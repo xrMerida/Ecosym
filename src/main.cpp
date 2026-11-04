@@ -31,10 +31,6 @@ struct stats {
 simulation *world = nullptr;
 stats initial_stats{};
 
-inline void print_logs() {
-    world->logs().print_logs(std::cout);
-}
-
 inline std::ostream &operator<<(std::ostream &output, stats stat) {
     return output << ansi::green << "plants: " << ansi::res << stat.plants
                   << '\n'
@@ -52,15 +48,6 @@ inline std::ostream &operator<<(std::ostream &output, stats stat) {
             world->count(trophic_t::carnivore)};
 }
 
-void exit_cmd() {
-    world->logs().print_history(std::cout);
-    std::cout << ansi::bold << "--- Current statistics ---\n";
-    std::cout << ansi::res << get_stats() << '\n';
-    std::cout << ansi::bold << "--- Initial statistics ---\n";
-    std::cout << ansi::res << initial_stats << '\n';
-    std::cout << ansi::bold << "== Simulation terminated ==\n" << ansi::res;
-}
-
 inline int random_value(int max) {
     return std::rand() % max;
 }
@@ -72,6 +59,15 @@ int read_int(std::string_view name, int min, int max) {
                   << max << ']' << ansi::res << ": ";
     } while (!repl::try_read_int(result, min, max));
     return result;
+}
+
+void exit_cmd() {
+    world->logs().print_history(std::cout);
+    std::cout << ansi::bold << "--- Current statistics ---\n";
+    std::cout << ansi::res << get_stats() << '\n';
+    std::cout << ansi::bold << "--- Initial statistics ---\n";
+    std::cout << ansi::res << initial_stats << '\n';
+    std::cout << ansi::bold << "== Simulation terminated ==\n" << ansi::res;
 }
 
 void lookup_cmd() {
@@ -99,8 +95,8 @@ void reset_cmd() {
     constexpr int min_length = 12;
     constexpr int max_length = 25;
 
-    int columns = read_int("matrix x-axis", min_length, max_length);
-    int rows = read_int("matrix y-axis", min_length, max_length);
+    int columns = read_int("map rows", min_length, max_length);
+    int rows = read_int("map columns", min_length, max_length);
     world = new simulation(rows, columns, random_value);
 
     constexpr factory factories[] = {
@@ -122,7 +118,7 @@ void reset_cmd() {
             world->spawn(fct.type, fct.symbol, location);
         }
     }
-    print_logs();
+    world->logs().print_logs(std::cout);
     initial_stats.plants = world->count(trophic_t::plant);
     initial_stats.herbivores = world->count(trophic_t::herbivore);
     initial_stats.carnivores = world->count(trophic_t::carnivore);
@@ -134,7 +130,7 @@ int main() {
 
     constexpr function_t step_cmd = [] {
         world->step();
-        print_logs();
+        world->logs().print_logs(std::cout);
     };
     constexpr function_t draw_cmd = [] { world->draw(std::cout); };
     constexpr function_t stats_cmd = [] { std::cout << get_stats(); };
