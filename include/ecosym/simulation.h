@@ -2,10 +2,11 @@
 
 #include "data/list.h"
 #include "ecosym/logger.h"
-#include "ecosym/map.h"
 #include "ecosym/organism.h"
 #include "types.h"
 #include <ostream>
+#include <string>
+#include <vector>
 
 namespace ecosym {
 
@@ -80,7 +81,7 @@ public:
     /// @param who The organism to move.
     /// @param prey_type The trophic type of prey to approach.
     /// @return `true` when the organism moved.
-    bool stalk(organism *who, trophic_t prey_type);
+    bool stalk(organism *hunter, trophic_t prey_type);
     /// @brief Advances the simulation by one turn.
     void step();
     /// @brief Draws the current map state.
@@ -89,7 +90,7 @@ public:
 
 
 private:
-    map map_;
+    std::vector<std::string> map_;
     data::list<organism *> organisms_;
     logger logger_;
     randomizer random_;

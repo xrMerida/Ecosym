@@ -14,7 +14,12 @@
 namespace ecosym {
 
 simulation::simulation(int rows, int columns, randomizer random)
-    : map_(rows, columns), random_(random) {}
+    : map_(), random_(random) {
+    if (rows <= 0 || columns <= 0) {
+        throw std::invalid_argument("map dimensions must be positive");
+    }
+    map_.assign(rows, std::string(columns, '\''));
+}
 
 simulation::~simulation() {
     for (organism *current : organisms_) {
@@ -53,11 +58,11 @@ size_t simulation::organism_count() const {
 }
 
 int simulation::rows() const {
-    return map_.rows();
+    return static_cast<int>(map_.size());
 }
 
 int simulation::columns() const {
-    return map_.columns();
+    return static_cast<int>(map_[0].size());
 }
 
 size_t simulation::count(trophic_t type) const {
@@ -88,7 +93,12 @@ const organism *simulation::lookup(position location) const {
 }
 
 bool simulation::empty(position location) const {
-    return map_.in_bounds(location) && lookup(location) == nullptr;
+    return in_bounds(location) && lookup(location) == nullptr;
+}
+
+bool simulation::in_bounds(position location) const {
+    return location.row >= 0 && location.row < rows() && location.column >= 0 &&
+           location.column < columns();
 }
 
 bool simulation::move(organism *who, position destination) {
@@ -146,11 +156,17 @@ organism *simulation::find(trophic_t type, position center) {
 
 position simulation::random_empty(position center, int range) const {
     std::vector<position> locations;
-    for (position location : map_.neighbors(center, range)) {
-        if (empty(location)) {
+    for (int r = center.row - range; r <= center.row + range; r++) {
+        for (int c = center.column - range; c <= center.column + range; c++) {
+            position location{r, c};
+            if (location == center) continue;
+            if (!in_bounds(location)) continue;
+            if (!empty(location)) continue;
+
             locations.push_back(location);
         }
     }
+
     if (locations.empty()) {
         return no_position;
     }
@@ -159,9 +175,10 @@ position simulation::random_empty(position center, int range) const {
 
 position simulation::random_empty() const {
     std::vector<position> locations;
-    for (int row = 0; row < map_.rows(); row++) {
-        for (int column = 0; column < map_.columns(); column++) {
-            const position location{row, column};
+
+    for (int r = 0; r < rows(); r++) {
+        for (int c = 0; c < columns(); c++) {
+            const position location{r, c};
             if (empty(location)) {
                 locations.push_back(location);
             }
@@ -205,23 +222,33 @@ bool simulation::move_random(organism *who) {
     return destination != no_position && move(who, destination);
 }
 
-bool simulation::stalk(organism *who, trophic_t prey_type) {
-    if (!owns(who)) {
+bool simulation::stalk(organism *hunter, trophic_t prey_type) {
+    if (!owns(hunter)) {
         return false;
     }
 
-    organism *prey = find(prey_type, who->location());
+    organism *prey = find(prey_type, hunter->location());
     if (prey == nullptr) {
         return false;
     }
 
-    position current = who->location();
+    position current = hunter->location();
     int current_distance = distance(current, prey->location());
 
-    for (position destination : map_.neighbors(current, who->range())) {
-        if (empty(destination) &&
-            distance(destination, prey->location()) < current_distance) {
-            return move(who, destination);
+    const int r_initial = current.row - hunter->range();
+    const int r_final = current.row + hunter->range();
+    const int c_initial = current.column - hunter->range();
+    const int c_final = current.column + hunter->range();
+    for (int r = r_initial; r <= r_final; r++) {
+        for (int c = c_initial; c <= c_final; c++) {
+            position destination{r, c};
+            if (current == destination) continue;
+            if (!in_bounds(destination)) continue;
+            if (!empty(destination)) continue;
+            if (distance(current, prey->location()) >= current_distance)
+                continue;
+
+            return move(hunter, destination);
         }
     }
     return false;
@@ -251,21 +278,24 @@ void simulation::step() {
 }
 
 void simulation::draw(std::ostream &output) {
-    map_.clear();
+    for (std::string &row : map_) {
+        row.assign(columns(), '\'');
+    }
     for (const organism *current : organisms_) {
-        map_.set(current->location(), current->symbol());
+        map_[current->location().row][current->location().column] =
+            current->symbol();
     }
 
-    for (int r = map_.rows() - 1; r >= 0; r--) {
+    for (int r = rows() - 1; r >= 0; r--) {
         output << std::setw(2) << r << ' ';
-        for (int c = 0; c < map_.columns(); c++) {
-            char symbol = map_.at({r, c});
+        for (int c = 0; c < columns(); c++) {
+            char symbol = map_[r][c];
             output << std::setw(2) << symbol << ' ';
         }
         output << '\n';
     }
     output << "   ";
-    for (int c = 0; c < map_.columns(); c++) {
+    for (int c = 0; c < columns(); c++) {
         output << std::setw(2) << c << ' ';
     }
     output << '\n';
@@ -302,7 +332,7 @@ bool simulation::owns(const organism *candidate) const {
 void simulation::remove_dead() {
     auto it = organisms_.begin();
     while (it != organisms_.end()) {
-        organism *current = *it;
+        organism *&current = *it;
         if (!current->dead()) {
             ++it;
             continue;
