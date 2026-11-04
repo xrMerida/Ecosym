@@ -8,7 +8,7 @@ void ecosym::animal::act(simulation &world) {
     if (dead()) return;
 
     if (world.kill(this, prey_type())) return;
-    if (world.move_towards(this, prey_type())) return;
+    if (world.stalk(this, prey_type())) return;
     world.move_random(this);
 }
 

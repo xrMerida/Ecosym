@@ -28,7 +28,7 @@ constexpr function_t no_op = [] {};
 /// @brief Print the help message for the given commands.
 /// @param commands A span of Command objects representing the available
 /// commands.
-constexpr void help(std::span<const command> commands);
+void help(std::span<const command> commands);
 
 /// @brief Check if the standard input stream has failed.
 /// @return true if the standard input stream has failed, false otherwise.

@@ -4,8 +4,12 @@
 
 namespace ecosym {
 
+/// @brief An animal that feeds on herbivores.
 class carnivore : public animal {
 public:
+    /// @brief Creates a carnivore.
+    /// @param symbol The character used to draw the carnivore.
+    /// @param location The carnivore's initial location.
     explicit carnivore(char symbol, position location)
         : animal(symbol, location, 10) {}
 

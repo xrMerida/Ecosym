@@ -8,7 +8,7 @@
 #include <string>
 #include <string_view>
 
-constexpr void repl::help(std::span<const command> commands) {
+void repl::help(std::span<const command> commands) {
     for (auto &command : commands)
         std::cout << command.cmd << '\t' << command.desc << '\n';
     std::cout << ansi::faint << "help\tPrint this help message\n"
@@ -20,10 +20,9 @@ constexpr void repl::help(std::span<const command> commands) {
 bool repl::cin_fail() {
     if (!std::cin.fail()) return false;
 
-
     std::cerr << ansi::red << "repl: input error" << ansi::res << std::endl;
     std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
     if (std::cin.eof()) {
         std::cout << '\n';
         exit(0);

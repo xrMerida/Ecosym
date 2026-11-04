@@ -23,24 +23,6 @@ bool map::in_bounds(position location) const {
            location.column < columns();
 }
 
-std::vector<position> map::neighbors(position center, int range) const {
-    if (range < 0) {
-        throw std::invalid_argument("neighbor range cannot be negative");
-    }
-
-    std::vector<position> result;
-    for (int row = center.row - range; row <= center.row + range; row++) {
-        for (int column = center.column - range;
-             column <= center.column + range; column++) {
-            position location{row, column};
-            if (location != center && in_bounds(location)) {
-                result.push_back(location);
-            }
-        }
-    }
-    return result;
-}
-
 char map::at(position location) const {
     check_location(location);
     return cells_[location.row][location.column];

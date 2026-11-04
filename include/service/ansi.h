@@ -27,7 +27,7 @@ constexpr esc faint[] = "\033[2m";
 
 // @brief Allow windows terminals interpret ANSI codes
 // @note This function is a no-op on non-Windows platforms.
-constexpr void setup() {
+inline void setup() {
 #ifdef _WIN32
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
     if (handle == INVALID_HANDLE_VALUE) {

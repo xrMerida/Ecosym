@@ -205,8 +205,8 @@ bool simulation::move_random(organism *who) {
     return destination != no_position && move(who, destination);
 }
 
-bool simulation::move_towards(organism *who, trophic_t prey_type) {
-    if (who == nullptr || !owns(who)) {
+bool simulation::stalk(organism *who, trophic_t prey_type) {
+    if (!owns(who)) {
         return false;
     }
 
@@ -230,6 +230,13 @@ bool simulation::move_towards(organism *who, trophic_t prey_type) {
 void simulation::step() {
     turn_++;
     logger_.clear();
+
+    // FIX: Inefficient solution
+    // Possibly use a static iterator on global scope
+    // A pointer to an iterator, changed when erase()
+    // is called
+    // Previous solution is fragile for reverse iterator
+    // but those are not used here. Snapshot is left as-is
     data::list<organism *> snapshot;
     for (organism *current : organisms_) {
         snapshot.push_back(current);
@@ -283,6 +290,7 @@ void simulation::remove(organism *target) {
 }
 
 bool simulation::owns(const organism *candidate) const {
+    if (!candidate) return false;
     for (const organism *current : organisms_) {
         if (current == candidate) {
             return true;
@@ -292,13 +300,17 @@ bool simulation::owns(const organism *candidate) const {
 }
 
 void simulation::remove_dead() {
-    for (auto it = organisms_.begin(); it != organisms_.end();) {
+    auto it = organisms_.begin();
+    while (it != organisms_.end()) {
         organism *current = *it;
         if (!current->dead()) {
             ++it;
             continue;
         }
 
+        std::ostringstream event;
+        event << current->symbol() << " died at " << current->location();
+        logs().add(event.str());
         delete current;
         it = organisms_.erase(it);
     }
